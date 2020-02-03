@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoundGen", "SoundGen\SoundGen.csproj", "{97E937E1-8235-4511-838B-CCCDA9D596AA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{97E937E1-8235-4511-838B-CCCDA9D596AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97E937E1-8235-4511-838B-CCCDA9D596AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97E937E1-8235-4511-838B-CCCDA9D596AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97E937E1-8235-4511-838B-CCCDA9D596AA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
