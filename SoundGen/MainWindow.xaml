@@ -21,6 +21,7 @@
         <TextBlock Name="FileNameLbl" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3"></TextBlock>
         <Button Name="OpenFileBtn" Click="OpenFileBtn_OnClick" Grid.Column="1" Grid.Row="1">OpenFile</Button>
         <TextBox Name="LinesText" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto"/>
-        <Image Name="WaveImage" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="3"/>
+        <ProgressBar Name="GenerationProgressBar" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="3"/>
+        <!-- <Image Name="WaveImage" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="3"/> -->
     </Grid>
 </Window>
