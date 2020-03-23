@@ -3,12 +3,34 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using log4net;
 
 namespace SoundGen
 {
-    public class WavFileGenerator
+    
+    public class WavFileGenerationResult
     {
+        public string FileName { get;  }
+        public int FileSize { get; }
+
+        public WavFileGenerationResult(string fileName, int fileSize)
+        {
+            FileName = fileName;
+            FileSize = fileSize;
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(FileName)}: {FileName}, {nameof(FileSize)}: {FileSize}";
+        }
+    }
+    
+    public class WavFileGenerator 
+    {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        
         private const short BitsPerSampleQmLab = 16; //Important for QMLab 
         private const byte DataTypeQmLab = 1;
         private readonly Encoding _encoding = Encoding.GetEncoding("windows-1251");
@@ -18,9 +40,7 @@ namespace SoundGen
 
         public string FileName => _fileName;
 
-        public int FileSize => _fileSize;
-
-        public void WriteSoundData(string fileName, int divider)
+        public WavFileGenerationResult WriteSoundData(string fileName, int divider, BackgroundWorker worker, DoWorkEventArgs args)
         {
             //Leaving all parameters in this method - we might want to pass them from the UI with eventArgs
             int sampleRate = 44100;
@@ -32,40 +52,44 @@ namespace SoundGen
 
             _fileName = fileName;
 
-            int linesinCsv = GetCsvLinesCount(fileName) - channels;
-            
+            int linesinCsv = GetCsvLinesCount(fileName, worker) - channels;
+
             using var reader = new StreamReader(new BufferedStream(new FileStream(fileName, FileMode.Open)),
                 _encoding);
-            
+
             SkipCsvHeader(channels, reader);
 
-            using var writer = new BinaryWriter(new BufferedStream(new FileStream(fileName + ".wav", FileMode.Create)));
+            using var writer =
+                new BinaryWriter(new BufferedStream(new FileStream(fileName + ".wav", FileMode.Create)));
 
             writer.Write(header);
 
             string line;
             int fileLenBytes = header.Length;
             int linesProcessed = 0;
-            while ((line = reader.ReadLine()) != null)
+            while ((line = reader.ReadLine()) != null && !worker.CancellationPending)
             {
                 var data = processLine(line, channels, columnOffset, precision, divider, maxPossibleValue);
                 var bytesWritten = WriteSingleSample(1, sampleRate, writer, data);
                 fileLenBytes += bytesWritten;
                 linesProcessed++;
-                Console.WriteLine("Processed "+linesProcessed +" of "+linesinCsv+" : "+ (linesProcessed*100/linesinCsv) + "%");
+                worker.ReportProgress(linesProcessed * 100 / linesinCsv);
             }
 
             WriteHeader(AddFileLengthToHeader(header, fileLenBytes), writer);
-            
+
             _fileSize = fileLenBytes;
+
+            args.Cancel = worker.CancellationPending;
+            return new WavFileGenerationResult(fileName, fileLenBytes);
         }
 
-        private int GetCsvLinesCount(string fileName)
+        private int GetCsvLinesCount(string fileName, BackgroundWorker worker)
         {
             using var reader = new StreamReader(new BufferedStream(new FileStream(fileName, FileMode.Open)));
             
             int lines = 0;
-            while (!reader.EndOfStream)
+            while (!reader.EndOfStream && !worker.CancellationPending)
             {
                 reader.ReadLine();
                 lines++;
@@ -77,6 +101,7 @@ namespace SoundGen
         private short[] processLine(string line, short channels, int columnOffset, int precision, int divider,
             int maxPossibleValue)
         {
+            Log.Debug("Processing: "+line);
             string[] stringData = line.Split(";");
             float[] valuesByChannel = new float[channels];
             for (int i = 0; i < channels; i++)
@@ -105,6 +130,7 @@ namespace SoundGen
         private int WriteSingleSample(int lengthInSeconds, int sampleRate, BinaryWriter writer,
             short[] data)
         {
+            Log.Debug("Writing: ["+string.Join(" ", data)+"]");
             //TODO Generate one big array, fill it with data, then write it at once.
             var sampleSize = lengthInSeconds * sampleRate * data.Length * 2;
             //Time
