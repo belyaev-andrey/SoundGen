@@ -1,9 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Text;
 using System.Windows;
 using Microsoft.Win32;
-using NAudio.Wave;
 
 namespace SoundGen
 {
@@ -18,14 +16,16 @@ namespace SoundGen
         public MainWindow()
         {
             InitializeComponent();
-            GenerationProgressBar.Minimum = 0;
-            GenerationProgressBar.Maximum = 100;
+
+            CoeffList.ItemsSource = new[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+            CoeffList.SelectedValue = 1;
+            
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
         private void OnLineProcessed(object source, EventArgs args)
         {
-            GenerationProgressBar.Value = GenerationProgressBar.Value + 1;
+            
         }
 
         private void OnWavGenerated(object source, EventArgs args)
@@ -42,7 +42,7 @@ namespace SoundGen
             _fileConverter.OnWavGenerated += OnWavGenerated;
             FileNameLbl.Text = dlg.FileName;
             var fileName = dlg.FileName;
-            _fileConverter.WriteSoundData(fileName);
+            _fileConverter.WriteSoundData(fileName, (int)CoeffList.SelectedValue);
         }
 
     }

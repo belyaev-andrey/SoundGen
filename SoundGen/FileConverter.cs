@@ -1,72 +1,83 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace SoundGen
 {
     public class FileConverter
     {
-
         public const short bitsPerSampleQmLab = 16; //Important for QMLab 
         public const byte dataTypeQmLab = 1;
 
         public event EventHandler OnLineProcessed;
         public event EventHandler OnWavGenerated;
 
-        public void WriteSoundData(string fileName)
+        public void WriteSoundData(string fileName, int coefficient)
         {
-
             int sampleRate = 44100;
-            int lengthInSeconds = 9;
+            int lengthInSeconds = 0;
             short channels = 6;
+            int columnOffset = 3;
+            int precision = 1000;
+            int maxPossibleValue = 20;
             var header = CreateHeader(channels, sampleRate);
-            
+
             using (var reader = new StreamReader(new FileStream(fileName, FileMode.Open),
                 Encoding.GetEncoding("windows-1251")))
             {
-                string line;
-                for (int i = 0; i < 6; i++)
+                using (BinaryWriter writer = new BinaryWriter(new FileStream(fileName + ".wav", FileMode.Create)))
                 {
-                    reader.ReadLine();
-                }
-                while ((line = reader.ReadLine()) != null)
-                {
-                    string[] stringData = line.Split(";");
-                    float[] valuesByChannel = new float[6];
-                    for (int i = 0; i < 6; i++)
+                    for (int i = 0; i < channels; i++)
                     {
-                        valuesByChannel[i] = float.Parse(stringData[i + 3], CultureInfo.GetCultureInfo("ru-RU").NumberFormat);
+                        reader.ReadLine();
                     }
-                    OnLineProcessed?.Invoke(this, EventArgs.Empty);
+                    
+                    writer.Write(header);
+                    
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        string[] stringData = line.Split(";");
+                        Console.WriteLine(stringData[1]);
+                        float[] valuesByChannel = new float[channels];
+                        for (int i = 0; i < channels; i++)
+                        {
+                            valuesByChannel[i] = float.Parse(stringData[i + columnOffset],
+                                CultureInfo.GetCultureInfo("ru-RU").NumberFormat);
+                        }
+
+                        var data = valuesByChannel.Select(f =>  Convert.ToInt16((((f * precision) / coefficient)/(maxPossibleValue*precision))*short.MaxValue  ) ).ToArray();
+                        WriteSingleSample(1, sampleRate, writer, data);
+                        lengthInSeconds += 1;
+                        OnLineProcessed?.Invoke(this, EventArgs.Empty);
+                    }
+
+                    int totalSamples = sampleRate * lengthInSeconds;
+                    int fileLenBytes = (totalSamples * channels * bitsPerSampleQmLab) / 8 + header.Length;
+                    Console.WriteLine("Total file time: "+lengthInSeconds+" sec Total file size: " +fileLenBytes+" bytes");
+                    WriteHeader(AddFileLengthToHeader(header, fileLenBytes), writer);
                 }
             }
-            using (BinaryWriter writer = new BinaryWriter(new FileStream(fileName + ".wav", FileMode.Create)))
+
+            OnWavGenerated?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void WriteSingleSample(int lengthInSeconds, int sampleRate, BinaryWriter writer,
+            short[] data)
+        {
+            //Time
+            for (int i = 0; i < lengthInSeconds; i++)
             {
-                int totalSamples = sampleRate * lengthInSeconds;
-                int fileLenBytes = (totalSamples * channels * bitsPerSampleQmLab) / 8 + 44;
-
-                header = AddFileLengthToHeader(header, fileLenBytes);
-                writer.Write(header);
-
-                //Time
-                for (int i = 0; i <= lengthInSeconds; i++)
+                //Samples 
+                for (int j = 0; j < sampleRate; j++)
                 {
-                    short s = (short) (short.MinValue + ((short.MaxValue / 4) * i));
-                    //Samples 
-                    for (int j = 0; j < totalSamples / 8; j++)
+                    foreach (short sample in data)
                     {
-                        //Channels
-                        for (int k = 0; k < channels; k++)
-                        {
-                            byte[] sample = BitConverter.GetBytes(s);
-                            writer.Write(sample);
-                        }
+                        writer.Write(BitConverter.GetBytes(sample));
                     }
                 }
-                OnWavGenerated?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -133,6 +144,12 @@ namespace SoundGen
             byte[] fileData = BitConverter.GetBytes(fileSize - 44);
             Array.Copy(fileData, 0, newHeader, 40, 4);
             return newHeader;
+        }
+
+        public void WriteHeader(byte[] header, BinaryWriter writer)
+        {
+            writer.Seek(0, SeekOrigin.Begin);
+            writer.Write(header);
         }
     }
 }

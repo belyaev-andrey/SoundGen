@@ -18,7 +18,8 @@
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <TextBlock Name="FileNameLbl" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3"></TextBlock>
+        <TextBlock Name="FileNameLbl" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"/>
+        <ComboBox Name="CoeffList" Grid.Column="2" Grid.Row="0"/>
         <Button Name="OpenFileBtn" Click="OpenFileBtn_OnClick" Grid.Column="1" Grid.Row="1">OpenFile</Button>
         <TextBox Name="LinesText" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto"/>
         <ProgressBar Name="GenerationProgressBar" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="3"/>
