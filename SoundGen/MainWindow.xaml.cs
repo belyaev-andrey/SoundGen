@@ -1,10 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
-using System.IO;
 using System.Reflection;
 using System.Windows;
 using log4net;
-using log4net.Config;
 using Microsoft.Win32;
 
 namespace SoundGen
@@ -61,7 +59,7 @@ namespace SoundGen
             }
             else if (args.Cancelled)
             {
-                MessageBox.Show("File: " + _wavFileGenerator.FileName + ". Generation Cancelled",
+                MessageBox.Show("File Generation Cancelled",
                     "File Generation Cancelled", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
             else if (args.Result is WavFileGenerationResult result)
