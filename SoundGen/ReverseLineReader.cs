@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace SoundGen
@@ -167,7 +168,7 @@ namespace SoundGen
 
                     position -= bytesToRead;
                     stream.Position = position;
-                    StreamUtil.ReadExactly(stream, buffer, bytesToRead);
+                    ReverseUtils.ReadExactly(stream, buffer, bytesToRead);
                     // If we haven't read a full buffer, but we had bytes left
                     // over from before, copy them to the end of the buffer
                     if (leftOverData > 0 && bytesToRead != bufferSize)
@@ -263,9 +264,9 @@ namespace SoundGen
         }
     }
 
-    public static class StreamUtil
+    public static class ReverseUtils
     {
-        public static void ReadExactly(Stream input, byte[] buffer, int bytesToRead)
+        internal static void ReadExactly(Stream input, byte[] buffer, int bytesToRead)
         {
             int index = 0;
             while (index < bytesToRead)
@@ -281,5 +282,26 @@ namespace SoundGen
                 index += read;
             }
         }
+        
+        public static string ReverseCsvFile(string fileName, int linesinCsv, int channels, Encoding encoding)
+        {
+            string invertedFileName = fileName + ".inverse";
+            using var reader = new StreamReader(new FileStream(fileName, FileMode.Open), encoding);
+            using var invWriter =
+                new StreamWriter(new BufferedStream(new FileStream(invertedFileName, FileMode.Create)), encoding);
+            for (int i = 0; i < channels; i++)
+            {
+                invWriter.WriteLine(reader.ReadLine());
+            }
+            reader.Close();
+            
+            var reverseLineReader = new ReverseLineReader(fileName, encoding);
+            foreach (var str in reverseLineReader.Take(linesinCsv))
+            {
+                invWriter.WriteLine(str);
+            }
+            return invertedFileName;
+        }
+
     }
 }

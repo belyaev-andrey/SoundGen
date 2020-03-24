@@ -49,7 +49,7 @@ namespace SoundGen
             int linesCount = GetSourceFileLinesCount(fileName, worker);
             int linesinCsv = linesCount - channels;
 
-            InvertCsvFile(fileName, linesinCsv, channels);
+            ReverseUtils.ReverseCsvFile(fileName, linesinCsv, channels, _encoding);
 
             using var reader = new StreamReader(new BufferedStream(new FileStream(fileName, FileMode.Open)),
                 _encoding);
@@ -79,25 +79,6 @@ namespace SoundGen
             return new WavFileGenerationResult(fileName, fileLenBytes);
         }
 
-        private void InvertCsvFile(string fileName, int linesinCsv, int channels)
-        {
-            using var reader = new StreamReader(new FileStream(fileName, FileMode.Open), _encoding);
-            using var invWriter =
-                new StreamWriter(new BufferedStream(new FileStream(fileName + ".inverse", FileMode.Create)), _encoding);
-            for (int i = 0; i < channels; i++)
-            {
-                invWriter.WriteLine(reader.ReadLine());
-            }
-            reader.Close();
-            
-            var reverseLineReader = new ReverseLineReader(fileName, _encoding);
-            foreach (var str in reverseLineReader.Take(linesinCsv))
-            {
-                invWriter.WriteLine(str);
-            }
-
-            invWriter.Flush();
-        }
 
         private int GetSourceFileLinesCount(string fileName, BackgroundWorker worker)
         {
