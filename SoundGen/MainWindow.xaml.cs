@@ -50,28 +50,32 @@ namespace SoundGen
 
         private void OnFileGenerationCompleted(object sender, RunWorkerCompletedEventArgs args)
         {
-            Log.Info("Wav file generation completed");
             if (args.Error != null)
             {
+                Log.Error("Error in file generation", args.Error);
+                
                 MessageBox.Show(
-                    "File Generation Error: " + args.Error.Message,
+                    "File generation error: " + args.Error.Message,
                     "File Generation Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             else if (args.Cancelled)
             {
+                Log.Info("Generation was cancelled");
                 MessageBox.Show("File Generation Cancelled",
                     "File Generation Cancelled", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
             else if (args.Result is WavFileGenerationResult result)
             {
+                Log.Info("Generation successful, file name is "+result.FileName);
                 MessageBox.Show(
                     "File: " + result.FileName + " is generated. File size: " + result.FileSize + " bytes",
                     "File Generated", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
+                Log.Error("Unspecified File Generation Error. File Generation Result is not valid: \""+args.Result+"\"");
                 MessageBox.Show(
-                    "Unspecified File Generation Error. File Generation Result is Empty. Please Consider Log Files",
+                    "Unspecified file generation error: result is invalid. Please consider log files",
                     "File Generation Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -102,7 +106,7 @@ namespace SoundGen
 
         private void CancelBtn_OnClick(object sender, RoutedEventArgs args)
         {
-            Log.Info("Wav file cancelled, args are: "+args);
+            Log.Info("Cancelling wav file generation, sender is \""+sender+"\"");
             _backgroundWorker.CancelAsync();
         }
     }
