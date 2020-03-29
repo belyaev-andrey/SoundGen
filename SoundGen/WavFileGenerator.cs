@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -171,7 +170,7 @@ namespace SoundGen
             byte[] headerLen = BitConverter.GetBytes(16);
             Array.Copy(headerLen, 0, header, 16, 4);
             //Data Type, 2 bytes - 20 - 21
-            byte[] dataType = BitConverter.GetBytes((byte) DataTypeQmLab);
+            byte[] dataType = BitConverter.GetBytes(DataTypeQmLab);
             Array.Copy(dataType, 0, header, 20, 2);
             //Channels, 2 bytes - 22 - 23
             byte[] channelsNum = BitConverter.GetBytes(channels);
