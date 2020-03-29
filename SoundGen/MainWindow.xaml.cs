@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using log4net;
@@ -10,9 +11,9 @@ namespace SoundGen
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
-        private readonly WavFileGenerator _wavFileGenerator = new WavFileGenerator();
+        private WavFileGenerator _wavFileGenerator;
         private readonly BackgroundWorker _backgroundWorker = new BackgroundWorker();
         
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -23,9 +24,6 @@ namespace SoundGen
 
             CoeffList.ItemsSource = new[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
             CoeffList.SelectedValue = 1;
-
-            GenerationProgressBar.Minimum = 0;
-            GenerationProgressBar.Maximum = 100;
 
             _backgroundWorker.WorkerSupportsCancellation = true;
             _backgroundWorker.WorkerReportsProgress = true;
@@ -39,8 +37,8 @@ namespace SoundGen
         {
             Log.Info("Starting Wav file generation, argument: "+args.Argument);
             if (args.Argument == null) return;
-            var (fileName, divider) = (Tuple<string, int>) args.Argument;
-            args.Result = _wavFileGenerator.WriteSoundData(fileName, divider, sender as BackgroundWorker, args);
+            var (fileName, divider, reverse) = (Tuple<string, int, bool>) args.Argument;
+            args.Result = _wavFileGenerator.WriteSoundData(divider, reverse, sender as BackgroundWorker, args);
         }
 
         private void OnGenerationProgressUpdate(object sender, ProgressChangedEventArgs args)
@@ -50,6 +48,10 @@ namespace SoundGen
 
         private void OnFileGenerationCompleted(object sender, RunWorkerCompletedEventArgs args)
         {
+            GenParamsPanel.IsEnabled = true;
+            CancelBtn.IsEnabled = false;
+            OpenFileBtn.IsEnabled = true;
+            
             if (args.Error != null)
             {
                 Log.Error("Error in file generation", args.Error);
@@ -84,14 +86,16 @@ namespace SoundGen
         {
             GenerationProgressBar.Value = 0;
             var fileName = GetCsvFileName();
+            GenParamsPanel.IsEnabled = (fileName != null);
+            FileNameLbl.Content = fileName;
             if (fileName != null)
             {
-                FileNameLbl.Text = fileName;
-                _backgroundWorker.RunWorkerAsync(new Tuple<string, int>(fileName, (int) CoeffList.SelectedValue));
+                _wavFileGenerator = new WavFileGenerator(fileName);
             }
         }
 
-        private string GetCsvFileName()
+        #nullable enable
+        private string? GetCsvFileName()
         {
             var dlg = new OpenFileDialog
                 {Filter = "CSV Tables|*.csv|All files|*.*", Multiselect = false, CheckFileExists = true};
@@ -100,7 +104,7 @@ namespace SoundGen
             {
                 return dlg.FileName;
             }
-
+            
             return null;
         }
 
@@ -108,6 +112,15 @@ namespace SoundGen
         {
             Log.Info("Cancelling wav file generation, sender is \""+sender+"\"");
             _backgroundWorker.CancelAsync();
+        }
+
+        private void GenerateBtn_OnClick(object sender, RoutedEventArgs e)
+        {
+            GenParamsPanel.IsEnabled = false;
+            CancelBtn.IsEnabled = true;
+            OpenFileBtn.IsEnabled = false;
+            var isChecked = ReverseCheckBox.IsChecked ?? false;
+            _backgroundWorker.RunWorkerAsync(new Tuple<string, int, bool>(_wavFileGenerator.FileName, (int) CoeffList.SelectedValue, isChecked));
         }
     }
 }

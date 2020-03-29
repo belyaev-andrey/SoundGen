@@ -2,19 +2,22 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFramework>net48</TargetFramework>
         <UseWPF>true</UseWPF>
         <LangVersion>8</LangVersion>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="log4net" Version="2.0.8" />
+      <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0-preview.1.20120.5" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="log4net.config">
+      <None Remove="log4net.config" />
+      <Resource Include="log4net.config">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+      </Resource>
     </ItemGroup>
 
 </Project>

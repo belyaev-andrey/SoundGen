@@ -2,8 +2,14 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:SoundGen"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <system:String x:Key="WindowTitle">Generate Sound File</system:String>
+        <system:String x:Key="OpenFile">Open File</system:String>
+        <system:String x:Key="DivCoeff">Division Coefficient</system:String>
+        <system:String x:Key="Reverse">Reverse?</system:String>
+        <system:String x:Key="StartGeneration">Start File Generation</system:String>
+        <system:String x:Key="CancelGeneration">Cancel Generation</system:String>
     </Application.Resources>
 </Application>

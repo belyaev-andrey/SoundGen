@@ -42,7 +42,7 @@ namespace SoundGen
         /// Function which, when given a position within a file and a byte, states whether
         /// or not the byte represents the start of a character.
         /// </summary>
-        private readonly Func<long,byte,bool> _characterStartDetector;
+        private readonly Func<long, byte, bool> _characterStartDetector;
 
         /// <summary>
         /// Creates a LineReader from a stream source. The delegate is only
@@ -127,14 +127,17 @@ namespace SoundGen
                 stream.Dispose();
                 throw new NotSupportedException("Unable to seek within stream");
             }
+
             if (!stream.CanRead)
             {
                 stream.Dispose();
                 throw new NotSupportedException("Unable to read within stream");
             }
+
             return GetEnumeratorImpl(stream);
         }
 
+#nullable enable
         private IEnumerator<string> GetEnumeratorImpl(Stream stream)
         {
             try
@@ -151,7 +154,7 @@ namespace SoundGen
                 byte[] buffer = new byte[_bufferSize + 2];
                 char[] charBuffer = new char[_encoding.GetMaxCharCount(buffer.Length)];
                 int leftOverData = 0;
-                String previousEnd = null;
+                string? previousEnd = null;
                 // TextReader doesn't return an empty string if there's line break at the end
                 // of the data. Therefore we don't return an empty string if it's our *first*
                 // return.
@@ -164,7 +167,7 @@ namespace SoundGen
 
                 while (position > 0)
                 {
-                    int bytesToRead = Math.Min(position > int.MaxValue ? _bufferSize : (int)position, _bufferSize);
+                    int bytesToRead = Math.Min(position > int.MaxValue ? _bufferSize : (int) position, _bufferSize);
 
                     position -= bytesToRead;
                     stream.Position = position;
@@ -178,6 +181,7 @@ namespace SoundGen
                         // 8, and have two bytes to copy...
                         Array.Copy(buffer, _bufferSize, buffer, bytesToRead, leftOverData);
                     }
+
                     // We've now *effectively* read this much data.
                     bytesToRead += leftOverData;
 
@@ -194,9 +198,11 @@ namespace SoundGen
                             throw new InvalidDataException("Invalid UTF-8 data");
                         }
                     }
+
                     leftOverData = firstCharPosition;
 
-                    int charsRead = _encoding.GetChars(buffer, firstCharPosition, bytesToRead - firstCharPosition, charBuffer, 0);
+                    int charsRead = _encoding.GetChars(buffer, firstCharPosition, bytesToRead - firstCharPosition,
+                        charBuffer, 0);
                     int endExclusive = charsRead;
 
                     for (int i = charsRead - 1; i >= 0; i--)
@@ -211,16 +217,19 @@ namespace SoundGen
                                 continue;
                             }
                         }
+
                         // Anything non-line-breaking, just keep looking backwards
                         if (lookingAt != '\n' && lookingAt != '\r')
                         {
                             continue;
                         }
+
                         // End of CRLF? Swallow the preceding CR
                         if (lookingAt == '\n')
                         {
                             swallowCarriageReturn = true;
                         }
+
                         int start = i + 1;
                         string bufferContents = new string(charBuffer, start, endExclusive - start);
                         endExclusive = i;
@@ -229,6 +238,7 @@ namespace SoundGen
                         {
                             yield return stringToYield;
                         }
+
                         firstYield = false;
                         previousEnd = null;
                     }
@@ -241,15 +251,18 @@ namespace SoundGen
                         Buffer.BlockCopy(buffer, 0, buffer, _bufferSize, leftOverData);
                     }
                 }
+
                 if (leftOverData != 0)
                 {
                     // At the start of the final buffer, we had the end of another character.
                     throw new InvalidDataException("Invalid UTF-8 data at start of stream");
                 }
+
                 if (firstYield && string.IsNullOrEmpty(previousEnd))
                 {
                     yield break;
                 }
+
                 yield return previousEnd ?? "";
             }
             finally
@@ -279,10 +292,11 @@ namespace SoundGen
                         bytesToRead - index,
                         bytesToRead - index == 1 ? "s" : ""));
                 }
+
                 index += read;
             }
         }
-        
+
         public static string ReverseCsvFile(string fileName, int linesinCsv, int channels, Encoding encoding)
         {
             string invertedFileName = fileName + ".inverse";
@@ -293,15 +307,16 @@ namespace SoundGen
             {
                 invWriter.WriteLine(reader.ReadLine());
             }
+
             reader.Close();
-            
+
             var reverseLineReader = new ReverseLineReader(fileName, encoding);
             foreach (var str in reverseLineReader.Take(linesinCsv))
             {
                 invWriter.WriteLine(str);
             }
+
             return invertedFileName;
         }
-
     }
 }

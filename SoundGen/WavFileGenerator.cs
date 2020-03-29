@@ -34,7 +34,16 @@ namespace SoundGen
         private const byte DataTypeQmLab = 1;
         private readonly Encoding _encoding = Encoding.GetEncoding("windows-1251");
 
-        public WavFileGenerationResult WriteSoundData(string fileName, int divider, BackgroundWorker worker,
+        private readonly string _fileName;
+
+        public WavFileGenerator(string fileName)
+        {
+            _fileName = fileName;
+        }
+
+        public string FileName => _fileName;
+
+        public WavFileGenerationResult WriteSoundData(int divider, bool doReverse, BackgroundWorker worker,
             DoWorkEventArgs args)
         {
             //Leaving all parameters in this method - we might want to pass them from the UI with eventArgs
@@ -45,18 +54,24 @@ namespace SoundGen
             int maxPossibleValue = 20;
             var header = CreateHeader(channels, sampleRate);
 
-            int linesCount = GetSourceFileLinesCount(fileName, worker);
+            int linesCount = GetSourceFileLinesCount(_fileName, worker);
             int linesinCsv = linesCount - channels;
 
-            ReverseUtils.ReverseCsvFile(fileName, linesinCsv, channels, _encoding);
 
-            using var reader = new StreamReader(new BufferedStream(new FileStream(fileName, FileMode.Open)),
+
+            string srcFileName = doReverse
+                ? ReverseUtils.ReverseCsvFile(_fileName, linesinCsv, channels, _encoding)
+                : _fileName; 
+
+            string dstFileName = srcFileName + ".wav";
+
+            using var reader = new StreamReader(new BufferedStream(new FileStream(srcFileName, FileMode.Open)),
                 _encoding);
 
             SkipCsvHeader(channels, reader);
 
             using var writer =
-                new BinaryWriter(new BufferedStream(new FileStream(fileName + ".wav", FileMode.Create)));
+                new BinaryWriter(new BufferedStream(new FileStream(dstFileName, FileMode.Create)));
 
             writer.Write(header);
 
@@ -75,7 +90,7 @@ namespace SoundGen
             WriteHeader(AddFileLengthToHeader(header, fileLenBytes), writer);
 
             args.Cancel = worker.CancellationPending;
-            return new WavFileGenerationResult(fileName, fileLenBytes);
+            return new WavFileGenerationResult(dstFileName, fileLenBytes);
         }
 
 
@@ -95,7 +110,7 @@ namespace SoundGen
             int maxPossibleValue)
         {
             Log.Debug("Processing: " + line);
-            string[] stringData = line.Split(";");
+            string[] stringData = line.Split(';');
             float[] valuesByChannel = new float[channels];
             for (int i = 0; i < channels; i++)
             {

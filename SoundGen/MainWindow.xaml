@@ -4,25 +4,36 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Generate Sound File" Height="450" Width="800">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <TextBlock Name="FileNameLbl" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"/>
-        <ComboBox Name="CoeffList" Grid.Column="2" Grid.Row="0"/>
-        <Button Name="OpenFileBtn" Click="OpenFileBtn_OnClick" Grid.Column="0" Grid.Row="1">OpenFile</Button>
-        <Button Name="CancelBtn" Click="CancelBtn_OnClick" Grid.Column="2" Grid.Row="1">Cancel Generation</Button>
-        <TextBox Name="LinesText" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto"/>
-        <ProgressBar Name="GenerationProgressBar" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="3"/>
-        <!-- <Image Name="WaveImage" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="3"/> -->
-    </Grid>
+        Title="{StaticResource WindowTitle}"
+        Height="600" Width="800"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        UseLayoutRounding="True">
+    <StackPanel Name="MainPanel" Orientation="Vertical">
+        <StackPanel Name="FileOpenPanel" Margin="10" Orientation="Horizontal">
+            <Label Name="FileNameLbl" HorizontalAlignment="Stretch" Width="650"/>
+            <Button Name="OpenFileBtn" Width="120" Margin="10,0,10,0" Click="OpenFileBtn_OnClick"
+                    HorizontalAlignment="Right">
+                <StaticResource ResourceKey="OpenFile"/>
+            </Button>
+        </StackPanel>
+        <StackPanel Name="GenerationPanel" Margin="10" Orientation="Horizontal">
+            <StackPanel Name="GenParamsPanel" Orientation="Horizontal" Width="650" IsEnabled="False">
+                <Label><StaticResource ResourceKey="DivCoeff"/></Label>
+                <ComboBox Name="CoeffList" />
+                <Label><StaticResource ResourceKey="Reverse"/></Label>
+                <CheckBox VerticalAlignment="Center" Name="ReverseCheckBox" IsChecked="False" />
+                <Button Name="GenerateBtn" Width="120" Margin="10,0,10,0" Click="GenerateBtn_OnClick"><StaticResource ResourceKey="StartGeneration"/></Button>
+            </StackPanel>
+            <Button Name="CancelBtn" Width="120" Margin="10,0,10,0" Click="CancelBtn_OnClick"
+                    HorizontalAlignment="Right" IsEnabled="False">
+                <StaticResource ResourceKey="CancelGeneration"/>
+            </Button>
+        </StackPanel>
+        <StackPanel Name="ProgressPanel" Margin="10" Orientation="Horizontal">
+            <ProgressBar Name="GenerationProgressBar" HorizontalAlignment="Stretch" Height="30" Width="800" Minimum="0" Maximum="100"/>
+        </StackPanel>
+    </StackPanel>
 </Window>
