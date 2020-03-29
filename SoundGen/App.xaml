@@ -11,5 +11,7 @@
         <system:String x:Key="Reverse">Reverse?</system:String>
         <system:String x:Key="StartGeneration">Start File Generation</system:String>
         <system:String x:Key="CancelGeneration">Cancel Generation</system:String>
+        <system:String x:Key="Copy">Copy File Name</system:String>
+        <system:String x:Key="OutputFile">Output File</system:String>
     </Application.Resources>
 </Application>

@@ -69,6 +69,7 @@ namespace SoundGen
             else if (args.Result is WavFileGenerationResult result)
             {
                 Log.Info("Generation successful, file name is "+result.FileName);
+                OutFileName.Text = result.FileName;
                 MessageBox.Show(
                     "File: " + result.FileName + " is generated. File size: " + result.FileSize + " bytes",
                     "File Generated", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -119,8 +120,14 @@ namespace SoundGen
             GenParamsPanel.IsEnabled = false;
             CancelBtn.IsEnabled = true;
             OpenFileBtn.IsEnabled = false;
+            OutFileName.Text = "";
             var isChecked = ReverseCheckBox.IsChecked ?? false;
             _backgroundWorker.RunWorkerAsync(new Tuple<string, int, bool>(_wavFileGenerator.FileName, (int) CoeffList.SelectedValue, isChecked));
+        }
+
+        private void CopyOutFile_OnClick(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(OutFileName.Text);
         }
     }
 }

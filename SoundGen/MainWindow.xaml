@@ -32,8 +32,13 @@
                 <StaticResource ResourceKey="CancelGeneration"/>
             </Button>
         </StackPanel>
-        <StackPanel Name="ProgressPanel" Margin="10" Orientation="Horizontal">
+        <StackPanel Name="ProgressPanel" Margin="10" Orientation="Vertical">
             <ProgressBar Name="GenerationProgressBar" HorizontalAlignment="Stretch" Height="30" Width="800" Minimum="0" Maximum="100"/>
+            <StackPanel Orientation="Horizontal" Margin="10">
+                <Label><StaticResource ResourceKey="OutputFile"/></Label>
+                <TextBox Name="OutFileName" Width="500" Margin="10,0,10,0" HorizontalContentAlignment="Center"/>
+                <Button Name="CopyOutFile" Click="CopyOutFile_OnClick" Margin="10,0,10,0" Width="120"><StaticResource ResourceKey="Copy"/></Button>
+            </StackPanel>
         </StackPanel>
     </StackPanel>
 </Window>
