@@ -299,7 +299,7 @@ namespace SoundGen
 
         public static string ReverseCsvFile(string fileName, int linesinCsv, int channels, Encoding encoding)
         {
-            string invertedFileName = fileName + ".inverse";
+            var invertedFileName = InvertedFileName(fileName);
             using var reader = new StreamReader(new FileStream(fileName, FileMode.Open), encoding);
             using var invWriter =
                 new StreamWriter(new BufferedStream(new FileStream(invertedFileName, FileMode.Create)), encoding);
@@ -316,6 +316,20 @@ namespace SoundGen
                 invWriter.WriteLine(str);
             }
 
+            return invertedFileName;
+        }
+
+        private static string InvertedFileName(string fileName)
+        {
+            string[] splitName = fileName.Split('.');
+            string filePath = fileName;
+            string extension = "";
+            if (splitName.Length > 1)
+            {
+                extension = splitName[splitName.Length - 1];
+                filePath = string.Join(".", splitName.Take(splitName.Length - 1).ToArray());
+            }
+            string invertedFileName = filePath + ".inverse."+extension;
             return invertedFileName;
         }
     }

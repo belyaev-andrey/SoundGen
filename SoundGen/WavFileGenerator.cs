@@ -63,7 +63,7 @@ namespace SoundGen
                 ? ReverseUtils.ReverseCsvFile(_fileName, linesinCsv, channels, _encoding)
                 : _fileName; 
 
-            string dstFileName = srcFileName + ".wav";
+            string dstFileName = srcFileName +"."+divider+".wav";
 
             using var reader = new StreamReader(new BufferedStream(new FileStream(srcFileName, FileMode.Open)),
                 _encoding);
